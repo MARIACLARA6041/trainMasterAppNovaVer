@@ -10,4 +10,5 @@ export const PATHS = {
   history:"exam-histories/user",
   faq:"/faqs",
   departament:"/departments/by-user",
+  examResult:"/exam-histories/adicionar"
 } as const;

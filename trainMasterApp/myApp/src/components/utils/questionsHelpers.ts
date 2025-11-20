@@ -1,10 +1,4 @@
-// Tipos dos parâmetros aceitos pela tela QuestionFlow
-export type QuestionFlowParams = {
-  mode: "exercise" | "exam";
-  title: string;
-  questions: any[];    // troque para seu tipo Question[] se preferir
-  startIndex?: number;  // opcional
-};
+import { QuestionFlowParams } from "../../screens/QuestionFlowScreen";
 
 // Assinatura mínima da função navigate (vinda do useNavigation)
 export type NavigateFn = (name: string, params?: any) => void;
@@ -29,11 +23,13 @@ export function goToExerciseFlow(navigate: NavigateFn, questions: any[]) {
 export function goToExamFlow(
   navigate: NavigateFn,
   title: string,
-  questions: any[] // troque para seu tipo Question[] se quiser
+  questions: any[], // troque para seu tipo Question[] se quiser
+  examId:number,
 ) {
   goToQuestionFlow(navigate, {
     mode: "exam",
     title,
     questions,
+    examId
   });
 }

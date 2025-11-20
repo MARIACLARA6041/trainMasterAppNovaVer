@@ -6,7 +6,6 @@ import { ExamHistoryItem } from "../types";
 export const HistoryService = {
         async getAllByUserId(): Promise<ExamHistoryItem[]> {
           try {
-            // Quando o endpoint real existir, basta trocar aqui
             const { data } = await routes.history.getAllByUserId();
             return data;
           } catch (e) {

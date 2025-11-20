@@ -22,8 +22,6 @@ export default function DepartmentScreen() {
   async function loadDepartment() {
     try {
       const res = await DepartamentService.getByUserId();
-
-      console.log(res)
       setDepartmentInfo(res[0]);
     } catch (e: any) {
       if(e.status =404) return  Alert.alert("Erro", "Usuario nao possui departamento cadastrado ");

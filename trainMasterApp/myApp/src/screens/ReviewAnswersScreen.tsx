@@ -8,6 +8,9 @@ import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/n
 import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
 import { useNavigation } from "@react-navigation/native";
 import { ResultParams } from "./ResultScreen";
+import { ExamAttemptBody } from "../services";
+import { ExamResultService } from "../services/examsResult/examsResult.service";
+import { authService } from "../services/auth/auth.service";
 
 
 export type ReviewParams = {
@@ -18,76 +21,65 @@ export type ReviewParams = {
     total: number;
     elapsedSec: number;
     passThreshold: number;
+    examId: number,
+    startedAt: string,
+    finishedAt: string;
+    score: number;
     questions: Question[];
     answers: Record<string, string[]>; // questionId -> opções escolhidas
 };
 
-type ResultadoAvaliação = {
-    totalPerguntas: number;
-    totalAcertos: number;
-    percentualAcertos: number;
-};
+
 
 type Nav = NativeStackNavigationProp<AprendizadoStackParamList, "Result">;
 
-function contarAcertos(
-    perguntas: Question[],
-    respostas: Record<string, Array<number | string>>
-): ResultadoAvaliação {
-    let acertos = 0;
 
-    for (const pergunta of perguntas) {
-        // garante acesso pela chave string
-        const respostasUsuarioRaw = respostas[String(pergunta.id)] ?? [];
-        // normaliza para string para comparar sem erro de tipo
-        const respostasUsuario = respostasUsuarioRaw.map(v => String(v));
-
-        const corretas = pergunta.options
-            .filter(o => o.isCorrect)
-            .map(o => String(o.id)); // normaliza para string também
-
-        const acertou =
-            corretas.length === respostasUsuario.length &&
-            corretas.every(id => respostasUsuario.includes(id));
-
-        if (acertou) acertos++;
-    }
-
-    const totalPerguntas = perguntas.length;
-    const percentualAcertos =
-        totalPerguntas > 0 ? Number(((acertos / totalPerguntas) * 100).toFixed(2)) : 0;
-
-    return { totalPerguntas, totalAcertos: acertos, percentualAcertos };
-}
 
 export default function ReviewAnswersScreen({ route, navigation }: any) {
     const nav = useNavigation<Nav>();
-    const { mode, title, questions, answers,elapsedSec } = route.params as ReviewParams;
+    const reviewParams = route.params as ReviewParams;
     const { theme } = useAppTheme();
     const isDark = theme.name === "dark";
     const hardBg = isDark ? "#0B0B0B" : "#EFF4F3";
     const cardBg = isDark ? "#111" : "#FFFFFF";
     const text = isDark ? "#fff" : "#111827";
     const [successModal, setSuccessModal] = React.useState(false);
-    console.log(elapsedSec)
-    const total = questions.length;
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         setSuccessModal(false);
-        const result = contarAcertos(questions, answers);
+        if (reviewParams.mode == "exam" && reviewParams.examId != 0) {
+            const payload: ExamAttemptBody = {
+                examId: reviewParams.examId,
+                durationSeconds: reviewParams.elapsedSec,
+                finishedAt: reviewParams.finishedAt,
+                score: reviewParams.score,
+                startedAt: reviewParams.startedAt,
+                status: reviewParams.score >= reviewParams.passThreshold ? 3 : 2,
+                studentId: authService.requireUserId(),
+                attemptNumber: 1
+            }
+            try {
+                const res = await ExamResultService.postResult(payload);
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+
         const mockResult: ResultParams = {
-            mode,
-            percent: result.percentualAcertos,
-            correct: result.totalAcertos,
-            total: result.totalPerguntas,
-            elapsedSec: elapsedSec,
-            passThreshold: 70,
+            mode: reviewParams.mode,
+            percent: reviewParams.percent,
+            correct: reviewParams.correct,
+            total: reviewParams.total,
+            elapsedSec: reviewParams.elapsedSec,
+            passThreshold: reviewParams.passThreshold,
+            score: reviewParams.score
         };
 
         nav.navigate("Result", mockResult);
     };
 
     const renderRow = ({ item, index }: { item: Question; index: number }) => {
-        const selected = answers[item.id] ?? [];
+        const selected = reviewParams.answers[item.id] ?? [];
         const label = selected.length
             ? selected.map((id) => item.options.find((o) => o.id === id)?.text).filter(Boolean).join(", ")
             : "Sem resposta";
@@ -115,19 +107,19 @@ export default function ReviewAnswersScreen({ route, navigation }: any) {
             <AppHeader userName="Lydia" onLogout={() => { }} />
 
             <FlatList
-                data={questions}
+                data={reviewParams.questions}
                 keyExtractor={(q) => q.id}
                 renderItem={renderRow}
                 ListHeaderComponent={
                     <>
-                        <Text style={[st.title, { color: text }]}>{title ?? (mode === "exam" ? "Prova" : "Questões")}</Text>
+                        <Text style={[st.title, { color: text }]}>{reviewParams.title ?? (reviewParams.mode === "exam" ? "Prova" : "Questões")}</Text>
 
                         <View style={st.progressWrap}>
                             <Text style={[st.progressLabel, { color: text }]}>Progresso</Text>
                             <View style={st.progressBar}>
                                 <View style={[st.progressFill, { width: "100%" }]} />
                             </View>
-                            <Text style={[st.progressRight, { color: text }]}>{total}/{total}</Text>
+                            <Text style={[st.progressRight, { color: text }]}>{reviewParams.total}/{reviewParams.total}</Text>
                         </View>
 
                         <Text style={[st.section, { color: text }]}>Verifique suas respostas</Text>
@@ -141,7 +133,7 @@ export default function ReviewAnswersScreen({ route, navigation }: any) {
                         }}
                     >
                         <Text style={st.finalBtnText}>
-                            {mode === "exam" ? "Finalizar – Prova" : "Finalizar – Exercícios"}
+                            {reviewParams.mode === "exam" ? "Finalizar – Prova" : "Finalizar – Exercícios"}
                         </Text>
                     </Pressable>
                 }

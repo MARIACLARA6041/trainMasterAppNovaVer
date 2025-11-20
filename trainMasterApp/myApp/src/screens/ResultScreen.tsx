@@ -16,6 +16,7 @@ export type ResultParams = {
     total: number;                 // total
     elapsedSec?: number;           // opcional: tempo em segundos
     passThreshold?: number;        // default 70
+    score:number
 };
 
 type R = RouteProp<Record<string, ResultParams>, string>;
@@ -41,6 +42,7 @@ export default function ResultScreen() {
         correct,
         total,
         elapsedSec,
+        score,
         passThreshold = 70,
     } = route.params ?? {
         mode: "exam",
@@ -49,7 +51,7 @@ export default function ResultScreen() {
         total: 0,
     };
 
-    const passed = percent >= passThreshold;
+    const passed = score >= passThreshold;
 
     const headerTitle = mode === "exam" ? "Resultado" : "Questões";
     const topMessage =

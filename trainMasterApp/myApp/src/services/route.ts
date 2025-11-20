@@ -2,7 +2,7 @@ import DepartmentScreen from "../screens/Department";
 import { api } from "./api";
 import { authService } from "./auth/auth.service";
 import { PATHS } from "./paths";
-import type { Course, CourseActivity, Exam, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
+import type { Course, CourseActivity, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
 
 
 
@@ -24,7 +24,9 @@ export const routes = {
       return api.get(`${PATHS.profile}/${userId}`)
     }
   },
-
+  examResults:{
+     postResult: (examPayload:ExamAttemptBody) => api.post(PATHS.examResult,examPayload),
+  },
   auth: {
     login: (payload: LoginPayload) => api.post(`${PATHS.login}`, payload),
     forgotPassword: (payload: { email: string; newPassword: string }) =>

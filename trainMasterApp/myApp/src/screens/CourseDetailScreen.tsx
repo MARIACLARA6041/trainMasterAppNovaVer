@@ -2,29 +2,42 @@ import React from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppHeader from "../components/header/AppHeader";
-import type { CourseDetail, ModuleBlock, Lesson, CourseActivity, CourseActivityWithQuestions, ActivitiesAndExams } from "../services";
+import type { CourseDetail, ModuleBlock, Lesson, CourseActivity, CourseActivityWithQuestions, ActivitiesAndExams, ExamHistoryItem } from "../services";
 import { useAppTheme } from "../components/theme/ThemeProvider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
 import { goToExamFlow, goToExerciseFlow } from "../components/utils/questionsHelpers";
 import { CoursesActivityService } from "../services/courseActivities/courseActivities";
 import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
+import { HistoryService } from "../services/history/history.service";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { DrawerParamList } from "../components/navigation/DrawerNavigator";
 
 
 type CourseDetailRouteProp = RouteProp<AprendizadoStackParamList, "CourseDetail">;
 
+
+function jaFezExameDoCurso(
+  history: ExamHistoryItem[],
+  courseId: number
+): boolean {
+  return history.some((item) => item.exam && item.exam.courseId === courseId);
+}
+
 export default function CourseDetailScreen() {
   const nav = useNavigation();
+  const drawerNav = useNavigation<DrawerNavigationProp<DrawerParamList>>();
   const course = [];
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
   const isDark = theme.name === "dark";
   const hardBg = isDark ? "#000000" : "#FFFFFF";
   const hardText = isDark ? "#FFFFFF" : "#000000";
-    const hardMuted = isDark ? "#A3A3A3" : "#666666";
+  const hardMuted = isDark ? "#A3A3A3" : "#666666";
   const route = useRoute<CourseDetailRouteProp>();
   const course2 = route.params.course;
   const [dataQuestion, setDataQuestion] = React.useState<ActivitiesAndExams>();
+  const [doneExam, setDoneExam] = React.useState(false)
   const [modulesWithQuestions, SetModulesWithQuestions] = React.useState<CourseActivityWithQuestions[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -37,6 +50,13 @@ export default function CourseDetailScreen() {
       setLoading(true);
       try {
         const items = await CoursesActivityService.getAllFilterById(+course2?.id);
+        try {
+          const history = await HistoryService.getAllByUserId();
+          setDoneExam(jaFezExameDoCurso(history, +course2.id));
+        } catch (error) {
+          console.log(error)
+        }
+
         setDataQuestion(items);
         const _modulesWithQuestions =
           (items?.activities || []).filter(
@@ -82,76 +102,90 @@ export default function CourseDetailScreen() {
           <Text style={[s.title, { color: hardText }]}>{course2.name}</Text>
 
           {/* Prova */}
-          { dataQuestion?.exams.length ? (          
+          {dataQuestion?.exams.length ? (
             <>
-            <Text style={[s.sectionTitle, { color: hardText }]}>Prova</Text>
-          <View style={[s.card, { backgroundColor: hardBg }]}>
-            <View style={s.rowTop}>
-              <Text style={[s.cardTitle, { color: hardText }]}>
-                {dataQuestion?.exams[0].title}
-              </Text>
+              <Text style={[s.sectionTitle, { color: hardText }]}>Prova</Text>
+              <View style={[s.card, { backgroundColor: hardBg }]}>
+                <View style={s.rowTop}>
+                  <Text style={[s.cardTitle, { color: hardText }]}>
+                    {dataQuestion?.exams[0].title}
+                  </Text>
 
-              <Pressable
-                style={s.cta}
-                onPress={() =>
-                  goToExamFlow(
-                    nav.navigate,
-                    "Prova",
-                    modulesWithQuestions[0].questions || []
-                  )
-                }
-              >
-                <Text style={s.ctaText}>Entrar</Text>
-              </Pressable>
-            </View>
-          </View>
-          </>)
-          :null}
+                  {doneExam ? (
+                    <Pressable style={s.cta}
+                      onPress={() =>
+                        drawerNav.navigate("HomeTabs", {
+                          screen: "Inicio",         // aba
+                          params: { screen: "History" }, // screen dentro do stack da aba
+                        })
+                      }
+                    >
+                      <Text style={s.ctaText}>Historico</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable style={s.cta}
+                      onPress={() =>
+                        goToExamFlow(
+                          nav.navigate,
+                          "Prova",
+                          modulesWithQuestions[0].questions || [],
+                          dataQuestion?.exams[0].id
+                        )
+                      }
+                    >
+                      <Text style={s.ctaText}>Entrar</Text>
+                    </Pressable>
+                  )}
+
+                </View>
+              </View>
+            </>)
+            : null}
 
 
           {/* Exercícios */}
-                    { dataQuestion?.activities.length ? (          
+          {dataQuestion?.activities.length ? (
             <>
-          <Text style={[s.sectionTitle, { marginTop: 16, color: hardText }]}>
-            Exercícios
-          </Text>
-          <Text style={[s.subtitle, { color: hardText }]}>
-            0 de {modulesWithQuestions?.length} módulos concluídos
-          </Text>
+              <Text style={[s.sectionTitle, { marginTop: 16, color: hardText }]}>
+                Exercícios
+              </Text>
+              <Text style={[s.subtitle, { color: hardText }]}>
+                0 de {modulesWithQuestions?.length} módulos concluídos
+              </Text>
 
-          {dataQuestion?.activities
-            ?.filter(m => m.questions && m.questions.length > 0) // só com questions
-            .map((m, idx) => (
-              <View
-                key={m.id}
-                style={[
-                  s.card,
-                  { backgroundColor: hardBg },
-                  idx > 0 && s.cardSeparated,
-                ]}
-              >
-                <View style={s.rowTop}>
-                  <Text style={[s.cardTitle, { color: hardText }]}>
-                    {m.title}
-                  </Text>
-
-                  <Pressable
-                    style={s.cta}
-                    onPress={() => goToExerciseFlow(nav.navigate, m.questions)}
+              {dataQuestion?.activities
+                ?.filter(m => m.questions && m.questions.length > 0) // só com questions
+                .map((m, idx) => (
+                  <View
+                    key={m.id}
+                    style={[
+                      s.card,
+                      { backgroundColor: hardBg },
+                      idx > 0 && s.cardSeparated,
+                    ]}
                   >
-                    <Text style={s.ctaText}>Entrar</Text>
-                  </Pressable>
-                </View>
+                    <View style={s.rowTop}>
+                      <Text style={[s.cardTitle, { color: hardText }]}>
+                        {m.title}
+                      </Text>
 
-                {/* se quiser listar as questões: 
+                      <Pressable
+                        style={s.cta}
+                        onPress={() => goToExerciseFlow(nav.navigate, m.questions)}
+                      >
+                        <Text style={s.ctaText}>Entrar</Text>
+                      </Pressable>
+                    </View>
+
+                    {/* se quiser listar as questões: 
             {m.questions.map(l => (
               <Row key={l.id} lesson={l} />
             ))} 
             */}
-              </View>
-            ))}
-            </>):null
-            }
+                  </View>
+                ))}
+            </>) : null
+          }
         </ScrollView>
       ) : (
         <View style={{ marginTop: 32, alignItems: "center" }}>
@@ -159,8 +193,9 @@ export default function CourseDetailScreen() {
             Aguarde a atividades ficarem disponiveis
           </Text>
         </View>
-      )}
-    </View>
+      )
+      }
+    </View >
   );
 
 }
@@ -201,7 +236,7 @@ function Row({ lesson }: { lesson: Lesson }) {
 }
 
 const s = StyleSheet.create({
-    cardSubtitle: {
+  cardSubtitle: {
     color: "#0F1E25",
     fontSize: 15,
     fontWeight: "700",

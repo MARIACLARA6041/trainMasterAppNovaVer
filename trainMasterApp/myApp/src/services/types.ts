@@ -102,6 +102,7 @@ export type Exam = {
   endAt: string;     // ISO 8601, ex: "2025-10-20T14:00:00.000Z"
   isPublished: boolean;
   courseId: number;
+  id:number;
 }
 
 export interface ExamHistoryItem {
@@ -126,6 +127,16 @@ export interface ActivitiesAndExams {
   exams: Exam[];
 }
 
+export interface ExamAttemptBody {
+  examId: number;
+  studentId: number;
+  attemptNumber: number;
+  startedAt: string;   // ISO Date string
+  finishedAt: string;  // ISO Date string
+  score: number;
+  durationSeconds: number;
+  status: number;
+}
 
 export type DepartmentProps = {
   department: string;

@@ -35,7 +35,6 @@ export default function CourseCard({ item, showbutton, progress }: Props) {
   }
 
   const { theme } = useAppTheme();
-  console.log("CourseCard - item:", item);
   const navigation = useNavigation<any>();
   const isDark = theme.name === "dark";
   const hardBg = isDark ? "#000000" : "#FFFFFF";

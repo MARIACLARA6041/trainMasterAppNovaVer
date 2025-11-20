@@ -12,6 +12,7 @@ export type Question = {
   title?: string;
   imageUrl?: string;
   statement: string;
+  points:number;
   options: Option[];
   multiple?: boolean; // se não vier, será deduzido do mode
 };

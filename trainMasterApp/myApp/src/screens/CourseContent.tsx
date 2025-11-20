@@ -2,14 +2,12 @@ import React from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppHeader from "../components/header/AppHeader";
-import type { CourseDetail, ModuleBlock, Lesson, CourseActivity, CourseActivityWithQuestions, ActivitiesAndExams } from "../services";
+import type {  Lesson,   ActivitiesAndExams } from "../services";
 import { useAppTheme } from "../components/theme/ThemeProvider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
-import { goToExamFlow, goToExerciseFlow } from "../components/utils/questionsHelpers";
 import { CoursesActivityService } from "../services/courseActivities/courseActivities";
 import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
-
 
 type CourseDetailRouteProp = RouteProp<AprendizadoStackParamList, "CourseContent">;
 const TABS = ["Visão Geral", "Recursos", "Anotações", "Discussões"];
@@ -54,6 +52,7 @@ export default function CourseContentScreen() {
       setLoading(true);
       try {
         const items = await CoursesActivityService.getAllFilterById(+course2.id);
+      
         setDataQuestion(items);
       } catch (e: any) {
         if (
