@@ -103,7 +103,7 @@ export default function QuestionFlowScreen() {
         title: title ?? (mode === "exam" ? "Prova" : "Questões"),
         questions: QUESTIONS,
         answers,
-        examId,
+        examId:examId ?? 0 ,
         correct: result.totalAcertos,
         passThreshold:70,
         percent:result.percentualAcertos,

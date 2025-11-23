@@ -31,6 +31,7 @@ import CourseContentScreen from "../../screens/CourseContent";
 import DepartmentScreen from "../../screens/Department";
 import FaqScreen from "../../screens/FaqScreen";
 import ExamHistoryScreen from "../../screens/ExamHistoryScreen";
+import CourseResourcesScreen from "../../screens/CourseResourcesScreen";
 
 
 
@@ -59,6 +60,7 @@ export type AprendizadoStackParamList = {
   CourseDetail: { course: Course };        // detalhe do curso (não aparece na Tab)
   CourseContent: { course: Course };
   CourseOverview: CourseOverviewParams;
+  CourseResources: { courseId:number, courseName:string};
   QuestionFlow: QuestionFlowParams;
   ReviewAnswers: ReviewParams;
   Result: ResultParams;
@@ -84,6 +86,10 @@ function AprendizadoStack() {
       <AprendizadoStackNav.Screen
         name="CourseOverview"
         component={CourseOverviewScreen}
+      />
+            <AprendizadoStackNav.Screen
+        name="CourseResources"
+        component={CourseResourcesScreen}
       />
       <AprendizadoStackNav.Screen
         name="QuestionFlow"

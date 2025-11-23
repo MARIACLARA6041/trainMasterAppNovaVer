@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppHeader from "../components/header/AppHeader";
-import type {  Lesson,   ActivitiesAndExams } from "../services";
+import type { Lesson, ActivitiesAndExams } from "../services";
 import { useAppTheme } from "../components/theme/ThemeProvider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
@@ -34,14 +34,16 @@ export default function CourseContentScreen() {
       case "Visão Geral":
         navigation.navigate("Aprendizado", { screen: "CourseOverview", params: { courseId: course2.id, showB: false } });
         break;
-
-      default: {
-        console.log(tab)
-      }
+      case "Recursos":
+        navigation.navigate("Aprendizado", { screen: "CourseResources", params: { courseId: course2.id, courseName: course2.name } });
+        break;
+      case "Anotações":
+        navigation.navigate("Aprendizado", { screen: "CourseOverview", params: { courseId: course2.id, showB: false } });
+        break;
+      case "Discussões":
+        navigation.navigate("Aprendizado", { screen: "CourseOverview", params: { courseId: course2.id, showB: false } });
         break;
     }
-
-
   }
 
   // função que realmente busca
@@ -52,7 +54,7 @@ export default function CourseContentScreen() {
       setLoading(true);
       try {
         const items = await CoursesActivityService.getAllFilterById(+course2.id);
-      
+
         setDataQuestion(items);
       } catch (e: any) {
         if (

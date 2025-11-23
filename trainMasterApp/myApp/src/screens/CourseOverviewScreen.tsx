@@ -162,7 +162,18 @@ export default function CourseOverviewScreen() {
         contentContainerStyle={[s.body, s.scrollContent]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[s.overviewTitle, { color: hardText }]}>{course?.name ?? "Curso"}</Text>
+        <View style={back.titleWrapper}>
+          <Pressable
+            onPress={() => navigate.goBack()}
+            style={back.backButton}
+          >
+            <Text style={back.backButtonText}>Voltar</Text>
+          </Pressable>
+
+          <Text style={[s.overviewTitle, { color: hardText }]}>
+            {course?.name ?? "Curso"}
+          </Text>
+        </View>
         <Text style={[s.overviewSubtitle, { color: hardText }]}>
           Visão Geral
         </Text>
@@ -174,7 +185,7 @@ export default function CourseOverviewScreen() {
         <Text style={[s.sectionTitle, { marginTop: 8, color: hardText }]}>
           Período:
         </Text>
-        <Text style={{ color: hardText, fontSize: 13, marginBottom:12 }}>
+        <Text style={{ color: hardText, fontSize: 13, marginBottom: 12 }}>
           {new Date(course?.startDate ?? "").toLocaleDateString("pt-BR")} até{" "}
           {new Date(course?.endDate ?? "").toLocaleDateString("pt-BR")}
         </Text>
@@ -273,4 +284,28 @@ const local = StyleSheet.create({
     elevation: 4,
   },
   modalTitle: { marginTop: 12, fontSize: 18, fontWeight: "600", color: "#333" },
+});
+
+const back = StyleSheet.create({
+  titleWrapper: {
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  backButton: {
+    position: "absolute",
+    left: 0,
+    backgroundColor: "#D9D9D9", // cinza
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+
+  backButtonText: {
+    color: "#000000",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
