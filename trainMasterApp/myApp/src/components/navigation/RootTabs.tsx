@@ -32,6 +32,8 @@ import DepartmentScreen from "../../screens/Department";
 import FaqScreen from "../../screens/FaqScreen";
 import ExamHistoryScreen from "../../screens/ExamHistoryScreen";
 import CourseResourcesScreen from "../../screens/CourseResourcesScreen";
+import CourseNotesScreen from "../../screens/CourseNotesScreen";
+import CourseDiscussionsScreen from "../../screens/CourseDiscussionsScreen";
 
 
 
@@ -60,7 +62,9 @@ export type AprendizadoStackParamList = {
   CourseDetail: { course: Course };        // detalhe do curso (não aparece na Tab)
   CourseContent: { course: Course };
   CourseOverview: CourseOverviewParams;
-  CourseResources: { courseId:number, courseName:string};
+  CourseResources: { courseId: number, courseName: string };
+  CourseNotes: { courseId: number, courseName: string };
+  CourseDiscussion: { courseId: number, courseName: string };
   QuestionFlow: QuestionFlowParams;
   ReviewAnswers: ReviewParams;
   Result: ResultParams;
@@ -87,9 +91,17 @@ function AprendizadoStack() {
         name="CourseOverview"
         component={CourseOverviewScreen}
       />
-            <AprendizadoStackNav.Screen
+      <AprendizadoStackNav.Screen
         name="CourseResources"
         component={CourseResourcesScreen}
+      />
+      <AprendizadoStackNav.Screen
+        name="CourseNotes"
+        component={CourseNotesScreen}
+      />
+      <AprendizadoStackNav.Screen
+        name="CourseDiscussion"
+        component={CourseDiscussionsScreen}
       />
       <AprendizadoStackNav.Screen
         name="QuestionFlow"
@@ -149,11 +161,11 @@ function InicioStack() {
         name="Department"
         component={DepartmentScreen}
       />
-       <InicioStackNav.Screen
+      <InicioStackNav.Screen
         name="Faq"
         component={FaqScreen}
       />
-       <InicioStackNav.Screen
+      <InicioStackNav.Screen
         name="History"
         component={ExamHistoryScreen}
       />
@@ -186,7 +198,7 @@ export default function RootTabs() {
   // 7) Helper: navegar para uma aba específica
   const goTab = (tab: keyof TabParamList) => () => {
     setMenuOpen(false);
-  drawerNav.navigate("HomeTabs", { screen: tab } as NavigatorScreenParams<TabParamList>); // HomeTabs = Tab dentro do Drawer
+    drawerNav.navigate("HomeTabs", { screen: tab } as NavigatorScreenParams<TabParamList>); // HomeTabs = Tab dentro do Drawer
   };
 
 
@@ -200,7 +212,7 @@ export default function RootTabs() {
       key: "faq",
       label: "Perguntas frequentes",
       icon: "help-circle-outline",
-     onPress: () => {
+      onPress: () => {
         setMenuOpen(false);
         drawerNav.navigate("HomeTabs", {
           screen: "Inicio",         // aba
