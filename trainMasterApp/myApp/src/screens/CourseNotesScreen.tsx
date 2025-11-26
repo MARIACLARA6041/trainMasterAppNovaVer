@@ -11,47 +11,74 @@ import {
 import AppHeader from "../components/header/AppHeader";
 import { useAppTheme } from "../components/theme/ThemeProvider";
 import { styles as s } from "./styles";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { CourseNoteService } from "../services/courseNote/courseNote.service";
+import { CourseNote, CreateCourseNote } from "../services/types";
+import { useFocusEffect } from "@react-navigation/native";
+import { authService } from "../services/auth/auth.service";
+import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
 
-type Note = {
-  id: string;
-  text: string;
-  date: string; // dd/mm/aaaa
-};
+
+type CourseNotesRouteProp = RouteProp<AprendizadoStackParamList, "CourseNotes">;
+
 
 export default function CourseNotesScreen() {
   const { theme } = useAppTheme();
   const isDark = theme.name === "dark";
   const hardBg = isDark ? "#000000" : "#FFFFFF";
-  const hardText = "#000000"; // essa tela é clarinha
+  const hardText = !isDark ? "#000000" : "#FFFFFF";
   const nav = useNavigation<any>();
-  const route = useRoute<any>();
-
-  const course = route.params?.course;
+  const route = useRoute<CourseNotesRouteProp>();
+  const { courseId, courseName } = route.params;
 
   const [noteText, setNoteText] = React.useState("");
-  const [notes, setNotes] = React.useState<Note[]>([
-    { id: "1", text: "Primeira anotação", date: "10/05/2022" },
-    { id: "2", text: "Segunda anotação", date: "02/05/2022" },
-    { id: "3", text: "Terceira anotação", date: "01/05/2025" },
-  ]);
+  const [notes, setNotes] = React.useState<CourseNote[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  function handleAddNote() {
+  const loadNotes = async () => {
+    try {
+      setLoading(true);
+      const data = await CourseNoteService.getAllFromCourseId(courseId);
+      setNotes(data);
+    } catch (error) {
+      console.error("Erro ao carregar anotações:", error);
+      setNotes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  async function handleAddNote() {
     const trimmed = noteText.trim();
-    if (!trimmed) return;
-
-    const today = new Date();
-    const dateStr = today.toLocaleDateString("pt-BR"); // dd/mm/aaaa
-
-    const newNote: Note = {
-      id: String(Date.now()),
-      text: trimmed,
-      date: dateStr,
+    if (!trimmed || !courseId) return;
+    const userId = authService.requireUserId();
+    const payload: CreateCourseNote = {
+      courseId: courseId,
+      studentId: userId, // 👉 ideal trocar por id real do usuário logado
+      title: "Anotação",
+      content: trimmed,
+      isPrivate: true,
     };
 
-    setNotes((prev) => [newNote, ...prev]); // adiciona no topo
-    setNoteText("");
+    try {
+      await CourseNoteService.addDiscussion(payload);
+      setNoteText("");
+      loadNotes(); // recarrega lista após salvar
+    } catch (error) {
+      console.error("Erro ao salvar anotação:", error);
+    }
   }
+
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (courseId) {
+        loadNotes();
+      }
+    }, [courseId])
+  );
+
 
   return (
     <View style={{ flex: 1, backgroundColor: hardBg }}>
@@ -68,12 +95,12 @@ export default function CourseNotesScreen() {
           </Pressable>
 
           <Text style={[s.overviewTitle, { color: hardText }]}>
-            {course?.name ?? "Fundamentos da Web"}
+            {courseName}
           </Text>
         </View>
 
         {/* Subtítulo “+ Anotações” */}
-        <Text style={[local.subtitleCenter, { marginBottom: 16 }]}>
+        <Text style={[local.subtitleCenter, { marginBottom: 16 ,color: hardText }]}>
           + Anotações
         </Text>
 
@@ -99,19 +126,32 @@ export default function CourseNotesScreen() {
         </View>
 
         {/* Lista de anotações */}
-        <Text style={[local.sectionTitle, { marginTop: 24 }]}>
+        <Text style={[local.sectionTitle, { marginTop: 24 ,color: hardText }]}>
           Anotações :
         </Text>
 
         <View style={{ marginTop: 8 }}>
-          {notes.map((note) => (
-            <View key={note.id} style={local.noteCard}>
-              <View style={local.noteCardHeader}>
-                <Text style={local.noteText}>{note.text}</Text>
-                <Text style={local.noteDate}>{note.date}</Text>
+          {loading ? (
+            <Text style={{ textAlign: "center", color: hardText }}>
+              Carregando anotações...
+            </Text>
+          ) : notes.length === 0 ? (
+            <Text style={{ textAlign: "center", color: hardText }}>
+              Nenhuma anotação ainda.
+            </Text>
+          ) : (
+            notes.map((note) => (
+              <View key={note.id} style={local.noteCard}>
+                <View style={local.noteCardHeader}>
+                  <Text style={local.noteText}>{note.content}</Text>
+                  <Text style={local.noteDate}>
+                    {new Date(note.createdAt).toLocaleDateString("pt-BR")}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
+
         </View>
       </ScrollView>
     </View>

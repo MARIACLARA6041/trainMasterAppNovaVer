@@ -2,7 +2,7 @@ import DepartmentScreen from "../screens/Department";
 import { api } from "./api";
 import { authService } from "./auth/auth.service";
 import { PATHS } from "./paths";
-import type { Course, CourseActivity, CourseDiscussions, CourseResource, CreateCourseDiscussionBody, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
+import type { Course, CourseActivity, CourseDiscussions, CourseNote, CourseResource, CreateCourseDiscussionBody, CreateCourseNote, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
 
 
 
@@ -69,6 +69,14 @@ export const routes = {
       api.post(`${PATHS.courseDiscussion}/add`, payload),
     getAllFromCourseId: async (courseId: string) => {
       return api.get<CourseDiscussions[]>(`${PATHS.courseDiscussion}/bycourse/${courseId}`)
+    },
+  },
+  courseNotes: {
+    addNote: async (payload: CreateCourseNote): Promise<CourseNote> =>
+      api.post(`${PATHS.courseNotes}`, payload),
+    getAllFromCourseId: async (courseId: string) => {
+      const userId = authService.requireUserId().toString();
+      return api.get<CourseNote[]>(`${PATHS.courseNotes}/by-user/${userId}/course/${courseId}`)
     },
   },
 };

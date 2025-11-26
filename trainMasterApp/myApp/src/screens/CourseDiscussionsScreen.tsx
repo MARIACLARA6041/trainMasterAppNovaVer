@@ -16,6 +16,7 @@ import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
 import { useFocusEffect } from "@react-navigation/native";
 import { CourseDiscussions, CreateCourseDiscussionBody } from "../services/types";
 import { CourseDiscussionService } from "../services/courseDiscussion/courseDiscussion.service";
+import { authService } from "../services/auth/auth.service";
 
 
 type CourseDiscussionRouteProp = RouteProp<AprendizadoStackParamList, "CourseDiscussion">;
@@ -58,10 +59,10 @@ export default function CourseDiscussionsScreen() {
 
   const handleAddDiscussion = async () => {
     if (!message.trim()) return;
-
+    const userId = authService.requireUserId();
     const body: CreateCourseDiscussionBody = {
       courseId,
-      authorUserId: 3, // aqui ideal: pegar do user logado
+      authorUserId: userId, // aqui ideal: pegar do user logado
       title: "Pergunta",
       content: message,
       isLocked: false,
@@ -121,7 +122,7 @@ export default function CourseDiscussionsScreen() {
         </View>
 
         {/* Lista de perguntas frequentes */}
-        <Text style={[local.sectionTitle, { marginTop: 24, color: hardText  }]}>
+        <Text style={[local.sectionTitle, { marginTop: 24, color: hardText }]}>
           Perguntas mais frequentes :
         </Text>
 

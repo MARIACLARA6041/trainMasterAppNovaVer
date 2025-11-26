@@ -165,3 +165,19 @@ export interface CourseDiscussions {
 }
 
 export type CreateCourseDiscussionBody = Omit<CourseDiscussions, "id">;
+
+export interface CourseNote {
+  id: number;
+  courseId: number;
+  studentId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  isPrivate: boolean;
+}
+
+export type CreateCourseNote = Omit<
+  CourseNote,
+  "id" | "createdAt" | "updatedAt"
+>;
