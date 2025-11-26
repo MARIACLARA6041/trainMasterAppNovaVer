@@ -154,3 +154,14 @@ export interface CourseResource {
   fileSizeBytes: number;
   createDate: string; // ISO Date (ex: "2025-11-25T23:38:24.245257Z")
 }
+
+export interface CourseDiscussions {
+  id: number;
+  courseId: number;
+  authorUserId: number;
+  title: string;
+  content: string;
+  isLocked: boolean;
+}
+
+export type CreateCourseDiscussionBody = Omit<CourseDiscussions, "id">;

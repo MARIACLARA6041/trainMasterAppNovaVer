@@ -11,77 +11,71 @@ import {
 import AppHeader from "../components/header/AppHeader";
 import { useAppTheme } from "../components/theme/ThemeProvider";
 import { styles as s } from "./styles";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
+import { useFocusEffect } from "@react-navigation/native";
+import { CourseDiscussions, CreateCourseDiscussionBody } from "../services/types";
+import { CourseDiscussionService } from "../services/courseDiscussion/courseDiscussion.service";
 
-type Discussion = {
-  id: string;
-  studentName: string;
-  role: string;
-  question: string;
-  answer: string;
-  date: string; // dd/mm/aaaa
-};
+
+type CourseDiscussionRouteProp = RouteProp<AprendizadoStackParamList, "CourseDiscussion">;
 
 export default function CourseDiscussionsScreen() {
   const { theme } = useAppTheme();
   const isDark = theme.name === "dark";
   const hardBg = isDark ? "#000000" : "#FFFFFF";
-  const hardText = "#000000";
+  const hardText = !isDark ? "#000000" : "#FFFFFF";
 
   const nav = useNavigation<any>();
-  const route = useRoute<any>();
 
-  const course = route.params?.course;
+  const route = useRoute<CourseDiscussionRouteProp>();
+  const { courseId, courseName } = route.params;
+
 
   const [message, setMessage] = React.useState("");
-  const [discussions, setDiscussions] = React.useState<Discussion[]>([
-    {
-      id: "1",
-      studentName: "Pedro Henrique",
-      role: "Instrutor/Monitor",
-      question: "Pergunta: Não entendi como criar uma table no Html",
-      answer: "Resposta: Revise a aula 1 no momento 10:00 do vídeo",
-      date: "10/05/2022",
-    },
-    {
-      id: "2",
-      studentName: "Maria Helena",
-      role: "Instrutor/Monitor",
-      question: "Pergunta: Como posso carregar link do Javascript?",
-      answer:
-        "Resposta: Revise a aula 2 completa e pratique novamente os exercícios.",
-      date: "10/05/2022",
-    },
-    {
-      id: "3",
-      studentName: "Maria Aline",
-      role: "Instrutor/Monitor",
-      question: "Pergunta: Como criar uma classe no CSS?",
-      answer:
-        "Resposta: Revise a aula 3 e verifique os materiais complementares na sessão recursos.",
-      date: "10/05/2022",
-    },
-  ]);
+  const [discussions, setDiscussions] = React.useState<CourseDiscussions[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  function handleAddDiscussion() {
-    const trimmed = message.trim();
-    if (!trimmed) return;
+  const loadDiscussions = async () => {
+    try {
+      setLoading(true);
+      const response = await CourseDiscussionService.getAllFromCourseId(courseId);
+      setDiscussions(response);
+    } catch (error) {
+      console.error("Erro ao carregar discussões", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const today = new Date();
-    const dateStr = today.toLocaleDateString("pt-BR");
+  useFocusEffect(
+    React.useCallback(() => {
+      loadDiscussions();
+    }, [courseId])
+  );
 
-    const newItem: Discussion = {
-      id: String(Date.now()),
-      studentName: "Você",
-      role: "Aluno(a)",
-      question: `Pergunta: ${trimmed}`,
-      answer: "Resposta: Aguarde um instrutor responder sua dúvida.",
-      date: dateStr,
+
+
+  const handleAddDiscussion = async () => {
+    if (!message.trim()) return;
+
+    const body: CreateCourseDiscussionBody = {
+      courseId,
+      authorUserId: 3, // aqui ideal: pegar do user logado
+      title: "Pergunta",
+      content: message,
+      isLocked: false,
     };
 
-    setDiscussions((prev) => [newItem, ...prev]);
-    setMessage("");
-  }
+    try {
+      await CourseDiscussionService.addDiscussion(body);
+      setMessage("");
+      loadDiscussions(); // recarrega a lista após criar
+    } catch (error) {
+      console.error("Erro ao criar discussão:", error);
+    }
+  };
+
 
   return (
     <View style={{ flex: 1, backgroundColor: hardBg }}>
@@ -98,12 +92,12 @@ export default function CourseDiscussionsScreen() {
           </Pressable>
 
           <Text style={[s.overviewTitle, { color: hardText }]}>
-            {course?.name ?? "Fundamentos da Web"}
+            {courseName}
           </Text>
         </View>
 
         {/* Subtítulo “Discussões” */}
-        <Text style={local.subtitleCenter}>Discussões</Text>
+        <Text style={[local.subtitleCenter, { color: hardText }]}>Discussões</Text>
 
         {/* Caixa de texto para dúvida */}
         <TextInput
@@ -127,35 +121,51 @@ export default function CourseDiscussionsScreen() {
         </View>
 
         {/* Lista de perguntas frequentes */}
-        <Text style={[local.sectionTitle, { marginTop: 24 }]}>
+        <Text style={[local.sectionTitle, { marginTop: 24, color: hardText  }]}>
           Perguntas mais frequentes :
         </Text>
 
         <View style={{ marginTop: 8 }}>
-          {discussions.map((item) => (
-            <View key={item.id} style={local.card}>
-              {/* Topo: avatar + nome/role + data */}
-              <View style={local.cardHeader}>
-                <View style={local.avatarBlock}>
-                  <View style={local.avatarCircle}>
-                    <Text style={local.avatarInitial}>
-                      {item.studentName.charAt(0)}
-                    </Text>
-                  </View>
-                  <View style={{ marginLeft: 6 }}>
-                    <Text style={local.studentName}>{item.studentName}</Text>
-                    <Text style={local.role}>{item.role}</Text>
+          {loading ? (
+            <Text style={{ textAlign: "center", color: hardText }}>
+              Carregando discussões...
+            </Text>
+          ) : discussions.length === 0 ? (
+            <Text style={{ textAlign: "center", color: hardText }}>
+              Nenhuma discussão encontrada.
+            </Text>
+          ) : (
+            discussions.map((item) => (
+              <View key={item.id} style={local.card}>
+                <View style={local.cardHeader}>
+                  <View style={local.avatarBlock}>
+                    <View style={local.avatarCircle}>
+                      <Text style={local.avatarInitial}>
+                        {item.title.charAt(0)}
+                      </Text>
+                    </View>
+                    <View style={{ marginLeft: 6 }}>
+                      <Text style={local.studentName}>
+                        Usuário #{item.authorUserId}
+                      </Text>
+                      <Text style={local.role}>Discussão</Text>
+                    </View>
                   </View>
                 </View>
 
-                <Text style={local.date}>{item.date}</Text>
-              </View>
+                <Text style={local.question}>
+                  {item.title}
+                </Text>
 
-              {/* Pergunta / Resposta */}
-              <Text style={local.question}>{item.question}</Text>
-              <Text style={local.answer}>{item.answer}</Text>
-            </View>
-          ))}
+                <Text style={local.answer}>
+                  {item.content}
+                </Text>
+              </View>
+            )
+            )
+          )
+          }
+
         </View>
       </ScrollView>
     </View>

@@ -41,7 +41,7 @@ export default function CourseContentScreen() {
         navigation.navigate("Aprendizado", { screen: "CourseNotes", params: { courseId: course2.id, courseName: course2.name } });
         break;
       case "Discussões":
-        navigation.navigate("Aprendizado", { screen: "CourseDiscussion", params: { courseId: course2.id, showB: false } });
+        navigation.navigate("Aprendizado", { screen: "CourseDiscussion", params: { courseId: course2.id, courseName: course2.name } });
         break;
     }
   }

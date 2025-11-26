@@ -2,7 +2,7 @@ import DepartmentScreen from "../screens/Department";
 import { api } from "./api";
 import { authService } from "./auth/auth.service";
 import { PATHS } from "./paths";
-import type { Course, CourseActivity, CourseResource, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
+import type { Course, CourseActivity, CourseDiscussions, CourseResource, CreateCourseDiscussionBody, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
 
 
 
@@ -62,6 +62,13 @@ export const routes = {
     getAllFromCourseId: async (courseId: string) => {
       const qs = new URLSearchParams({ courseId: courseId }).toString();
       return api.get<CourseResource[]>(`${PATHS.courseResource}/list?${qs}`)
+    },
+  },
+  courseDiscussion: {
+    addDiscussion: async (payload: CreateCourseDiscussionBody): Promise<CourseDiscussions> =>
+      api.post(`${PATHS.courseDiscussion}/add`, payload),
+    getAllFromCourseId: async (courseId: string) => {
+      return api.get<CourseDiscussions[]>(`${PATHS.courseDiscussion}/bycourse/${courseId}`)
     },
   },
 };

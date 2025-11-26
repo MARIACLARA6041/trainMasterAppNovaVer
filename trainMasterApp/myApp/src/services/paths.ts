@@ -12,4 +12,5 @@ export const PATHS = {
   departament:"/departments/by-user",
   examResult:"/exam-histories/adicionar",
   courseResource:"/course-attachments-ativi",
+  courseDiscussion:"/discussions",
 } as const;
