@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, RouteProp, useRoute } from "@react-navigation/native";
 import { CoursesActivityService } from "../services/courseActivities/courseActivities";
 import { AprendizadoStackParamList } from "../components/navigation/RootTabs";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 type CourseDetailRouteProp = RouteProp<AprendizadoStackParamList, "CourseContent">;
 const TABS = ["Visão Geral", "Recursos", "Anotações", "Discussões"];
@@ -28,6 +29,7 @@ export default function CourseContentScreen() {
   const [refreshing, setRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<string>("");
+  const [playing, setPlaying] = React.useState(false);
 
   function handlePressTab(tab: string) {
     switch (tab) {
@@ -44,6 +46,13 @@ export default function CourseContentScreen() {
         navigation.navigate("Aprendizado", { screen: "CourseDiscussion", params: { courseId: course2.id, courseName: course2.name } });
         break;
     }
+  }
+
+  function extractYoutubeId(url: string): string {
+    const regExp =
+      /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[7].length === 11 ? match[7] : "";
   }
 
   // função que realmente busca
@@ -72,7 +81,6 @@ export default function CourseContentScreen() {
   );
 
   React.useEffect(() => {
-
     const controller = new AbortController();
     fetchEnrolled();
     return () => controller.abort();
@@ -86,13 +94,17 @@ export default function CourseContentScreen() {
         {/* Título */}
         <Text style={[s.title, { color: hardText }]}>{course2.name}</Text>
 
-        {/* PLAYER (placeholder) */}
         <View style={styles.videoContainer}>
-          <View style={styles.playButtonOuter}>
-
-            <Text style={styles.playIcon}>▶</Text>
-
-          </View>
+          <YoutubePlayer
+            height={220}
+            play={playing}
+            videoId={extractYoutubeId(course2.videoUrl)}
+            onChangeState={(state: any) => {
+              if (state === "ended") {
+                setPlaying(false);
+              }
+            }}
+          />
         </View>
 
 
@@ -280,11 +292,12 @@ const styles = StyleSheet.create({
 
   // PLAYER
   videoContainer: {
-    backgroundColor: "#000",
-    height: 200,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  width: "100%",
+  aspectRatio: 16 / 9,
+  borderRadius: 12,
+  overflow: "hidden",
+  marginTop: 16,
+},
   playButtonOuter: {
     width: 110,
     height: 110,

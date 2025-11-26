@@ -26,6 +26,7 @@ export type Course = {
   createDate: string;         // → "CreateDate" (ISO string)
   modificationDate: string;   // → "ModificationDate" (ISO string)
   thumbnailUrl: string;
+  videoUrl:string;
   duration: string;
 };
 
