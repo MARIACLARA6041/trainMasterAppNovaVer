@@ -26,6 +26,7 @@ export type Course = {
   createDate: string;         // → "CreateDate" (ISO string)
   modificationDate: string;   // → "ModificationDate" (ISO string)
   thumbnailUrl: string;
+  videoUrl:string;
   duration: string;
 };
 
@@ -102,6 +103,7 @@ export type Exam = {
   endAt: string;     // ISO 8601, ex: "2025-10-20T14:00:00.000Z"
   isPublished: boolean;
   courseId: number;
+  id:number;
 }
 
 export interface ExamHistoryItem {
@@ -126,9 +128,57 @@ export interface ActivitiesAndExams {
   exams: Exam[];
 }
 
+export interface ExamAttemptBody {
+  examId: number;
+  studentId: number;
+  attemptNumber: number;
+  startedAt: string;   // ISO Date string
+  finishedAt: string;  // ISO Date string
+  score: number;
+  durationSeconds: number;
+  status: number;
+}
 
 export type DepartmentProps = {
   department: string;
   team: string;
   manager: string;
 };
+
+export interface CourseResource {
+  id: number;
+  title: string;
+  description: string;
+  category: number;
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  createDate: string; // ISO Date (ex: "2025-11-25T23:38:24.245257Z")
+}
+
+export interface CourseDiscussions {
+  id: number;
+  courseId: number;
+  authorUserId: number;
+  title: string;
+  content: string;
+  isLocked: boolean;
+}
+
+export type CreateCourseDiscussionBody = Omit<CourseDiscussions, "id">;
+
+export interface CourseNote {
+  id: number;
+  courseId: number;
+  studentId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  isPrivate: boolean;
+}
+
+export type CreateCourseNote = Omit<
+  CourseNote,
+  "id" | "createdAt" | "updatedAt"
+>;

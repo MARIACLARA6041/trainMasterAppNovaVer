@@ -312,11 +312,12 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   overviewTitle: {
-    color: "#0F1E25",
     fontSize: 20,
     fontWeight: "800",
     textAlign: "center",
-    marginBottom: 6,
+    color: "#0f172a",
+    marginTop: 12,
+    marginBottom: 8,
   },
   overviewSubtitle: {
     color: "#4A5A61",
@@ -324,14 +325,14 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
     lineHeight: 20,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   overviewDescription: {
     fontSize: 14,
     lineHeight: 20,
     color: "#444",
     textAlign: "justify", 
-    marginBottom: 20,
+    marginBottom: 120,
   },
   overviewButton: {
     paddingVertical: 12,

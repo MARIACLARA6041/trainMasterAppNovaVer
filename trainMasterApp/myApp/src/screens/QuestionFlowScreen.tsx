@@ -14,6 +14,7 @@ export type QuestionFlowParams = {
   title?: string;                // título da tela
   questions: Question[];        // opcional: pode passar dataset pronto por navegação
   startIndex?: number;           // índice inicial (default 0)
+  examId?:number;
 };
 
 
@@ -23,6 +24,48 @@ function resolveQuestions(override: Question[]) {
   return override;
 }
 type Nav = NativeStackNavigationProp<AprendizadoStackParamList, "QuestionFlow">;
+
+type ResultadoAvaliação = {
+    totalPerguntas: number;
+    totalAcertos: number;
+    percentualAcertos: number;
+    score:number;
+};
+
+function contarAcertos(
+    perguntas: Question[],
+    respostas: Record<string, Array<number | string>>
+): ResultadoAvaliação {
+    let acertos = 0;
+    let score = 0;
+    for (const pergunta of perguntas) {
+        // garante acesso pela chave string
+        const respostasUsuarioRaw = respostas[String(pergunta.id)] ?? [];
+        // normaliza para string para comparar sem erro de tipo
+        const respostasUsuario = respostasUsuarioRaw.map(v => String(v));
+
+        const corretas = pergunta.options
+            .filter(o => o.isCorrect)
+            .map(o => String(o.id)); // normaliza para string também
+
+        const acertou =
+            corretas.length === respostasUsuario.length &&
+            corretas.every(id => respostasUsuario.includes(id));
+
+        if (acertou){
+            acertos++;
+            score = score + pergunta.points;
+        } 
+
+    }
+
+    const totalPerguntas = perguntas.length;
+    const percentualAcertos =
+        totalPerguntas > 0 ? Number(((acertos / totalPerguntas) * 100).toFixed(2)) : 0;
+
+    return { totalPerguntas, totalAcertos: acertos, percentualAcertos, score };
+}
+
 export default function QuestionFlowScreen() {
   const nav = useNavigation<Nav>();
   const route = useRoute<RouteProp<Record<string, QuestionFlowParams>, string>>();
@@ -31,6 +74,7 @@ export default function QuestionFlowScreen() {
     title,
     questions: override,
     startIndex = 0,
+    examId
   } = route.params ?? {};
 
   const QUESTIONS = React.useMemo(() => resolveQuestions(override), [override]);
@@ -53,12 +97,21 @@ export default function QuestionFlowScreen() {
   const onNext = () => {
     if (isLast) {
       cronometro.parar();
+      const result = contarAcertos(QUESTIONS, answers);
       nav.navigate("ReviewAnswers", {
         mode,
         title: title ?? (mode === "exam" ? "Prova" : "Questões"),
         questions: QUESTIONS,
         answers,
+        examId:examId ?? 0 ,
+        correct: result.totalAcertos,
+        passThreshold:70,
+        percent:result.percentualAcertos,
+        total:result.totalPerguntas,
         elapsedSec:cronometro.getSegundos(),
+        startedAt:cronometro.getDataInicial(),
+        finishedAt:cronometro.getDataFinal(),
+        score: result.score
       } satisfies ReviewParams);
       return;
     }

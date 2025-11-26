@@ -16,7 +16,7 @@ import CourseCard from "../components/CourseCard/CourseCard";
 import TrendingChips, {
   ChipItem,
 } from "../components/TrendingChips/TrendingChips";
-import { Course,coursesService } from "../services";
+import { Course, coursesService } from "../services";
 
 
 export default function SearchScreen() {
@@ -51,7 +51,6 @@ export default function SearchScreen() {
       const items = query?.trim()
         ? await coursesService.getBySearch(query)
         : await coursesService.getAll();
-console.log("SearchScreen - load - items:", items);
       setData(items);
     } catch (e: any) {
       if (e?.name !== "CanceledError" && e?.message !== "canceled") {
@@ -75,12 +74,12 @@ console.log("SearchScreen - load - items:", items);
     return () => clearTimeout(t);
   }, [q, load]);
 
-const renderItem = React.useCallback(
-  ({ item }: { item: Course }) => (
-    <CourseCard item={{ ...item }} showbutton={false} progress={0} />
-  ),
-  []
-);
+  const renderItem = React.useCallback(
+    ({ item }: { item: Course }) => (
+      <CourseCard item={{ ...item }} showbutton={false} progress={0} />
+    ),
+    []
+  );
 
   const keyExtractor = React.useCallback((item: Course) => item.id, []);
 

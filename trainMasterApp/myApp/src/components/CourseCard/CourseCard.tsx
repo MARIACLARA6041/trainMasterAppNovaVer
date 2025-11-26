@@ -35,7 +35,6 @@ export default function CourseCard({ item, showbutton, progress }: Props) {
   }
 
   const { theme } = useAppTheme();
-  console.log("CourseCard - item:", item);
   const navigation = useNavigation<any>();
   const isDark = theme.name === "dark";
   const hardBg = isDark ? "#000000" : "#FFFFFF";
@@ -45,7 +44,7 @@ export default function CourseCard({ item, showbutton, progress }: Props) {
   const progressTxt = formatCourseProgress(showbutton ? progress : null);
 
   function handlePress() {
-    if (!showbutton) navigation.navigate("Aprendizado", { screen: "CourseOverview", params: { courseId: item.id } });
+    if (!showbutton) navigation.navigate("Aprendizado", { screen: "CourseOverview", params: { courseId: item.id, showB:true } });
     else navigation.navigate("CourseContent", { course: item })
   }
 

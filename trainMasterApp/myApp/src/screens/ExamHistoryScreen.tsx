@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import AppHeader from "../components/header/AppHeader";
 import ExamHistoryCard from "../components/ExamHistoryCard/ExamHistoryCard";
 import { HistoryService } from "../services/history/history.service";
 import { ExamHistoryItem } from "../services";
 import { useAppTheme } from "../components/theme/ThemeProvider";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
+
 
 
 export default function ExamHistoryScreen() {
+  const isFocused = useIsFocused();
   const [loading, setLoading] = useState(true);
   const [historyItens, setItens] = useState<ExamHistoryItem[]>([])
   const { theme } = useAppTheme();
@@ -15,21 +18,24 @@ export default function ExamHistoryScreen() {
   const hardBg = isDark ? "#000000" : "#FFFFFF";
   const hardText = isDark ? "#FFFFFF" : "#000000";
 
-  useEffect(() => {
+useFocusEffect(
+  useCallback(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const itens = await HistoryService.getAllByUserId();
         setItens(itens);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
-        setItens([])
+        setItens([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [])
+);
 
   const EmptyState = React.useMemo(
     () => (

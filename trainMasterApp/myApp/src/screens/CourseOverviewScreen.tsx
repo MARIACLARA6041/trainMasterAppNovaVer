@@ -22,6 +22,7 @@ import { BASE_URL, fetchComTimeout } from "../components/routes/apiConfig";
 
 export type CourseOverviewParams = {
   courseId: number;
+  showB: boolean;
 };
 
 type Feedback = {
@@ -71,11 +72,11 @@ function FeedbackCard({ studentId, date, comment, rating }: Feedback) {
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Ionicons name="person-circle" size={40} color="#4F7CAC" />
         <View style={{ marginLeft: 8 }}>
-          <Text style={[local.cardUser, {color: hardText}]}>{`Estudante ${studentId}`}</Text>
-          <Text style={[local.cardDate, {color: hardText}]}>{date}</Text> 
+          <Text style={[local.cardUser, { color: hardText }]}>{`Estudante ${studentId}`}</Text>
+          <Text style={[local.cardDate, { color: hardText }]}>{date}</Text>
         </View>
       </View>
-      <Text style={[local.cardComment, {color: hardText}]}>{comment}</Text>
+      <Text style={[local.cardComment, { color: hardText }]}>{comment}</Text>
       <RatingStars rating={rating} />
     </View>
   );
@@ -84,8 +85,8 @@ function FeedbackCard({ studentId, date, comment, rating }: Feedback) {
 export default function CourseOverviewScreen() {
   const route =
     useRoute<RouteProp<Record<string, CourseOverviewParams>, string>>();
-  var { courseId } = route.params ?? {};
-  console.log("CourseOverviewScreen - route:", route);
+  let { courseId, showB } = route.params;
+  const showMatriculaButton = showB;
   const navigate = useNavigation<any>();
   const { theme } = useAppTheme();
   const isDark = theme.name === "dark";
@@ -97,7 +98,7 @@ export default function CourseOverviewScreen() {
   const [loading, setLoading] = useState(true);
   const [successModal, setSuccessModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
 
   const handleMatricula = () => setSuccessModal(true);
 
@@ -148,7 +149,7 @@ export default function CourseOverviewScreen() {
         ]}
       >
         <ActivityIndicator size="large" color="#50C2C9" />
-        <Text style={{color: hardText}}>Carregando informações...</Text>
+        <Text style={{ color: hardText }}>Carregando informações...</Text>
       </View>
     );
   }
@@ -161,29 +162,41 @@ export default function CourseOverviewScreen() {
         contentContainerStyle={[s.body, s.scrollContent]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[s.overviewTitle, {color: hardText}]}>{course?.name ?? "Curso"}</Text>
-        <Text style={[s.overviewSubtitle, {color: hardText}]}>
-          Instrutor(a): {course?.author ?? "Desconhecido"}
+        <View style={back.titleWrapper}>
+          <Pressable
+            onPress={() => navigate.goBack()}
+            style={back.backButton}
+          >
+            <Text style={back.backButtonText}>Voltar</Text>
+          </Pressable>
+
+          <Text style={[s.overviewTitle, { color: hardText }]}>
+            {course?.name ?? "Curso"}
+          </Text>
+        </View>
+        <Text style={[s.overviewSubtitle, { color: hardText }]}>
+          Visão Geral
         </Text>
 
-        <Text style={[s.overviewDescription, {color: hardText}]}>
+        <Text style={[s.overviewDescription, { color: hardText }]}>
           {course?.description ?? "Descrição não disponível no momento."}
         </Text>
 
         <Text style={[s.sectionTitle, { marginTop: 8, color: hardText }]}>
           Período:
         </Text>
-        <Text style={{ color: hardText, fontSize: 13 }}>
+        <Text style={{ color: hardText, fontSize: 13, marginBottom: 12 }}>
           {new Date(course?.startDate ?? "").toLocaleDateString("pt-BR")} até{" "}
           {new Date(course?.endDate ?? "").toLocaleDateString("pt-BR")}
         </Text>
 
-        <TouchableOpacity
+        {showMatriculaButton ? (<TouchableOpacity
           style={[s.overviewButton, { backgroundColor: "#50C2C9" }]}
           onPress={handleMatricula}
         >
           <Text style={s.overviewButtonText}>Matricular-se</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>) : null}
+
 
         <Text style={[s.sectionTitle, { color: hardText }]}>Feedbacks:</Text>
         {feedbacks.length > 0 ? (
@@ -271,4 +284,28 @@ const local = StyleSheet.create({
     elevation: 4,
   },
   modalTitle: { marginTop: 12, fontSize: 18, fontWeight: "600", color: "#333" },
+});
+
+const back = StyleSheet.create({
+  titleWrapper: {
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  backButton: {
+    position: "absolute",
+    left: 0,
+    backgroundColor: "#D9D9D9", // cinza
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+
+  backButtonText: {
+    color: "#000000",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
