@@ -2,61 +2,67 @@ import DepartmentScreen from "../screens/Department";
 import { api } from "./api";
 import { authService } from "./auth/auth.service";
 import { PATHS } from "./paths";
-import type { Course, CourseActivity, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
+import type { Course, CourseActivity, CourseResource, Exam, ExamAttemptBody, ExamHistoryItem, faq, LoginPayload, ProfilePayload } from "./types";
 
 
 
 export const routes = {
   department: {
-    getByUserId: () => {
+    getByUserId: async () => {
       const userId = authService.requireUserId().toString();
       return api.get(`${PATHS.departament}/${userId}`)
     }
   },
   profile: {
-    add: (payload: ProfilePayload) =>
+    add: async (payload: ProfilePayload) =>
       api.post(`${PATHS.profile}/adicionarPerfil`, payload),
-    update: (id: number, payload: ProfilePayload) =>
+    update: async (id: number, payload: ProfilePayload) =>
       api.put(`${PATHS.profile}/${id}`, payload),
-    getById: (id: number) => api.get(`${PATHS.profile}/${id}`),
-    getLoggedProfile: () => {
+    getById: async (id: number) => api.get(`${PATHS.profile}/${id}`),
+    getLoggedProfile: async () => {
       const userId = authService.requireUserId().toString();
       return api.get(`${PATHS.profile}/${userId}`)
     }
   },
-  examResults:{
-     postResult: (examPayload:ExamAttemptBody) => api.post(PATHS.examResult,examPayload),
+  examResults: {
+    postResult: async (examPayload: ExamAttemptBody) => api.post(PATHS.examResult, examPayload),
   },
   auth: {
-    login: (payload: LoginPayload) => api.post(`${PATHS.login}`, payload),
-    forgotPassword: (payload: { email: string; newPassword: string }) =>
+    login: async (payload: LoginPayload) => api.post(`${PATHS.login}`, payload),
+    forgotPassword: async (payload: { email: string; newPassword: string }) =>
       api.post(`${PATHS.login}/ForgotPassword`, payload),
   },
   courseActivities: {
-    getAll: () => api.get<CourseActivity[]>(`${PATHS.coursesActivities}/all`),
-    getAllQuestionsFromCourse: (id: number) => api.get(`${PATHS.coursesActivities}/${id}/questions`),
-    getAllExams: () => api.get<Exam[]>(`${PATHS.exams}/all`),
+    getAll: async () => api.get<CourseActivity[]>(`${PATHS.coursesActivities}/all`),
+    getAllQuestionsFromCourse: async (id: number) => api.get(`${PATHS.coursesActivities}/${id}/questions`),
+    getAllExams: async () => api.get<Exam[]>(`${PATHS.exams}/all`),
   },
   history: {
-    getAllByUserId: () => {
+    getAllByUserId: async () => {
       const userId = authService.requireUserId().toString();
       return api.get<ExamHistoryItem[]>(`${PATHS.history}/${userId}`);
     }
   },
   faq: {
-    getAll: () => api.get<faq[]>(PATHS.faq),
+    getAll: async () => api.get<faq[]>(PATHS.faq),
   },
   courses: {
-    getAll: () => api.get<Course[]>(PATHS.courses),
-    getBySearch: (search: string) => {
+    getAll: async () => api.get<Course[]>(PATHS.courses),
+    getBySearch: async (search: string) => {
       const qs = new URLSearchParams({ name: search }).toString();
       return api.get<Course[]>(`${PATHS.coursesSearch}?${qs}`);
     },
-    getEnrolled: () => {
+    getEnrolled: async () => {
       const userId = authService.requireUserId().toString();
       const qs = new URLSearchParams({ userId: userId }).toString();// tem que vir do auth
       return api.get<Course[]>(`${PATHS.courseEnrolled}?${qs}`);
     }
+  },
+  courseResource: {
+    getAllFromCourseId: async (courseId: string) => {
+      const qs = new URLSearchParams({ courseId: courseId }).toString();
+      return api.get<CourseResource[]>(`${PATHS.courseResource}/list?${qs}`)
+    },
   },
 };
 

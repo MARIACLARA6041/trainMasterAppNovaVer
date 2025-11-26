@@ -143,3 +143,14 @@ export type DepartmentProps = {
   team: string;
   manager: string;
 };
+
+export interface CourseResource {
+  id: number;
+  title: string;
+  description: string;
+  category: number;
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  createDate: string; // ISO Date (ex: "2025-11-25T23:38:24.245257Z")
+}
