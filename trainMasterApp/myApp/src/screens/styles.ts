@@ -312,11 +312,12 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   overviewTitle: {
-    color: "#0F1E25",
     fontSize: 20,
     fontWeight: "800",
     textAlign: "center",
-    marginBottom: 6,
+    color: "#0f172a",
+    marginTop: 12,
+    marginBottom: 8,
   },
   overviewSubtitle: {
     color: "#4A5A61",

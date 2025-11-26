@@ -145,6 +145,7 @@ const local = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
         marginBottom: 6,
+
     },
 
     backButton: {
@@ -163,10 +164,12 @@ const local = StyleSheet.create({
     },
 
     courseTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        marginBottom: 4,
-        marginTop: 4,
+        fontSize: 20,
+        fontWeight: "800",
+        textAlign: "center",
+        color: "#0f172a",
+        marginTop: 12,
+        marginBottom: 8,
     },
 
     subtitle: {
